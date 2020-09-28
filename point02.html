@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+	</head>
+	<body>
+
+		<script src="./js/three.min.js"></script>
+		<script src="./js/OrbitControls.js"></script>
+		<script>
+			//场景
+			var scene = new THREE.Scene();
+			//点光源
+			var pointLight = new THREE.PointLight(0xffffff);
+			pointLight.position.set(300, 300, 300);
+			scene.add(pointLight);
+			//环境光
+			var ambient = new THREE.AmbientLight(0x444444);
+			scene.add(ambient);
+			//相机
+			var width = window.innerWidth;
+			var height = window.innerHeight;
+			var k = width / height;
+			var s = 200;
+			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
+			camera.position.set(200, 200, 200);
+			camera.lookAt(scene.position);
+			//渲染对象
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(width, height);
+			renderer.setClearColor(0xb9d3ff, 1); //设置背景色
+
+			//坐标系
+			var axesHelper = new THREE.AxesHelper(250);
+			scene.add(axesHelper);
+
+			//立方体
+			/* var geometry = new THREE.BoxGeometry(100,100,100);
+			var material = new THREE.MeshLambertMaterial({
+				color:0x0000ff
+			});
+			var mesh = new THREE.Mesh(geometry,material);
+			//mesh.scale.set(2.5,1.5,0.5);//Mesh的缩放功能
+			scene.add(mesh); */
+
+
+			//几何体BufferGeometry的顶点位置数据
+			/* var geometry = new THREE.BufferGeometry();
+			//类型数组创建顶点位置position数据
+			var vertices = new Float32Array([
+				0, 0, 0, //顶点1坐标
+				50, 0, 0, //顶点2坐标
+				0, 100, 0, //顶点3坐标
+
+				0, 0, 0, //顶点4坐标
+				0, 0, 100, //顶点5坐标
+				50, 0, 0, //顶点6坐标
+			]);
+			//定义几何体顶点法向量数据
+			var normals = new Float32Array([
+				0, 0, 1, //顶点1法向量
+				0, 0, 1, //顶点2法向量
+				0, 0, 1, //顶点3法向量
+
+				0, 1, 0, //顶点4法向量
+				0, 1, 0, //顶点5法向量
+				0, 1, 0, //顶点6法向量
+			]);
+			// 创建属性缓冲区对象		//3个为一组
+			var attribute = new THREE.BufferAttribute(vertices, 3);
+			// 设置几何体attributes属性的位置position属性
+			geometry.attributes.position = attribute;
+			//设置几何体attributes属性的位置normal属性
+			geometry.attributes.normal = new THREE.BufferAttribute(normals,3);//3个为一组,表示一个顶点的法向量数据
+			
+			var material = new THREE.PointsMaterial({
+				color: 0x0000ff
+			});
+			var mesh = new THREE.Mesh(geometry, material);
+			scene.add(mesh); */
+
+
+
+			//顶点索引.index   通过索引实现两个三角形的顶点合成一个矩形
+			/* var geometry1 = new THREE.BufferGeometry(); //声明一个空几何体对象
+			//类型数组创建顶点位置position数据
+			var vertices1 = new Float32Array([
+				0, 0, 0, //顶点1坐标
+				80, 0, 0, //顶点2坐标
+				80, 80, 0, //顶点3坐标
+				0, 80, 0, //顶点4坐标
+			]);
+			// 创建属性缓冲区对象
+			var attribute1 = new THREE.BufferAttribute(vertices1, 3);
+			// 设置几何体attributes属性的位置position属性
+			geometry1.attributes.position = attribute1;
+			//定义几何体顶点法向量数据
+			var normals1 = new Float32Array([
+				0, 0, 1, //顶点1法向量
+				0, 0, 1, //顶点2法向量
+				0, 0, 1, //顶点3法向量
+				0, 0, 1, //顶点4法向量
+			]);
+			// 设置几何体attributes属性的位置normal属性
+			geometry1.attributes.normal = new THREE.BufferAttribute(normals1,3);
+
+			//通过顶点索引组织顶点数据，顶点索引数组indexes通过索引值指向顶
+			// Uint16Array类型数组创建顶点索引数据点位置
+			var indexs = new Uint16Array([
+				// 0对应第1个顶点位置数据、第1个顶点法向量数据
+				// 1对应第2个顶点位置数据、第2个顶点法向量数据
+				// 索引值3个为一组，表示一个三角形的3个顶点
+				0,1,2,
+				0,2,3,
+			]);
+			//索引数据赋值给几何体的index属性
+			geometry1.index = new THREE.BufferAttribute(indexs,1); //1个为一组
+			
+			var material1 = new THREE.PointsMaterial({
+				color: 0x0000ff
+			});
+			var mesh = new THREE.Mesh(geometry1, material1);
+			scene.add(mesh); */
+			
+			
+			
+			//Vector3定义顶点位置坐标数据
+			var geometry2 = new THREE.Geometry(); //声明一个几何体对象Geometry
+			//Vector3是threejs的三维向量对象,可以通过Vector3对象表示一个顶点的xyz坐标，顶点的法线向量。
+			var p1 = new THREE.Vector3(50,0,0);//顶点1坐标
+			var p2 = new THREE.Vector3(0, 70, 0); //顶点2坐标
+			var p3 = new THREE.Vector3(80, 70, 0); //顶点3坐标
+			//顶点坐标添加到geometry对象
+			geometry2.vertices.push(p1,p2,p3);
+			//通过threejs顶点颜色对象Color可以定义几何体顶点颜色数据
+			var color1 = new THREE.Color(0x00ff00); //顶点1颜色——绿色
+			var color2 = new THREE.Color(0xff0000); //顶点2颜色——红色
+			var color3 = new THREE.Color(0x0000ff); //顶点3颜色——蓝色
+			//顶点颜色数据添加到geometry对象
+			geometry2.colors.push(color1,color2,color3);
+			
+			//材质属性
+			//注意设置几何体Geometry顶点颜色属性geometry.colors，对网格模型Mesh是无效的
+			var material2 = new THREE.MeshLambertMaterial({
+				vertexColors:THREE.VertexColors,//以顶点颜色为准
+				side:THREE.DoubleSide	//两面可见
+			});
+			var line = new THREE.Line(geometry2,material2);
+			//var mesh = new THREE.Mesh(geometry2,material2);//Geometry 对网格模型Mesh是无效的
+			scene.add(line);
+			
+			
+			
+			function beginRender() {
+				document.body.appendChild(renderer.domElement);
+				renderer.render(scene, camera);
+			}
+			//渲染
+			beginRender();
+			//监听事件
+			var controls = new THREE.OrbitControls(camera, renderer.domElement);
+			controls.addEventListener('change', beginRender);
+		</script>
+
+
+	</body>
+</html>

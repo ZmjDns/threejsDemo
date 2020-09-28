@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		
+		<style type="text/css">
+			body{
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<script src="js/three.min.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		
+		<script>
+			/* const panorama = new PANOLENS.ImagePanorama( './img/nx.png' );
+			const viewer = new PANOLENS.Viewer();
+			viewer.add( panorama ); */
+			var scene = new THREE.Scene();
+			
+			//点光源
+			var point = new THREE.PointLight(0xffffff);
+			point.position.set(300,300,300);//点光源位置
+			scene.add(point);
+			var point1 = new THREE.PointLight(0xffffff);
+			point1.position.set(-300,-300,-300);//点光源位置
+			scene.add(point);
+			
+			//环境光
+			var ambient = new THREE.AmbientLight(0x444444);
+			scene.add(ambient);
+			
+			var width = window.innerWidth;
+			var height = window.innerHeight;
+			var k = width / height;	//窗口宽高比
+			var s = 200;	//3D场景显示范围控制系数
+			//相机对象
+			var camera = new THREE.OrthographicCamera(-s*k,s*k,s,-s,1,1000);//
+			camera.position.set(200,300,200);//设置相机位置
+			camera.lookAt(scene.position);	//设置相机方向（指向场景对象）
+			//渲染器
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(innerWidth,innerHeight);
+			renderer.setClearColor(0xb9d3ff,1);//设置背景色
+			
+			//引入坐标系
+			var axesHelper = new THREE.AxesHelper(250);
+			scene.add(axesHelper);
+			//注册监听鼠标事件
+			var controls = new THREE.OrbitControls(camera,renderer.domElement);
+			controls.addEventListener('change',beginRender);
+		
+			
+			var geometry = new THREE.PlaneGeometry(204, 102); //矩形平面
+			
+			var imageLoader = new THREE.ImageLoader();
+			imageLoader.load('img/nx.png',function(img){
+				var texture = new THREE.Texture(img);
+				texture.needsUpdate = true;
+				var material = new THREE.MeshLambertMaterial({
+					map:texture
+				});
+				var mesh = new THREE.Mesh(geometry,material);
+				//mesh.translateY(-20);
+				//geometry.translateZ(0,0,50)
+				scene.add(mesh);
+			});
+			
+			function beginRender(){
+				document.body.appendChild(renderer.domElement);
+				renderer.render(scene,camera);
+			}
+			beginRender();
+			
+			
+			
+			
+		</script>
+	</body>
+</html>

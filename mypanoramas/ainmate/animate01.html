@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+
+		<style type="text/css">
+			body {
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script type="module">
+
+			import * as THREE from '../../js/three.module.js';
+			import { OrbitControls } from '../../js/OrbitControls_new.js';
+			
+			var scene;
+			var camera,controls;
+			var renderer;
+			
+			init();
+			beginRender();
+			
+			function init(){
+				scene = new THREE.Scene();
+				//坐标系
+				var axesHelper = new THREE.AxesHelper(250);
+				scene.add(axesHelper);
+				
+				camera = new THREE.PerspectiveCamera(100,window.innerWidth/window.innerHeight,10,100)
+				camera.position.set(10,10,80);
+				scene.add(camera);
+				
+				
+				renderer = new THREE.WebGLRenderer({antialias: true});
+				renderer.setPixelRatio(window.devicePixelRatio);
+				renderer.setSize(innerWidth,innerHeight);
+				renderer.setClearColor(0xb9d3ff,1);//设置背景色
+				document.body.appendChild(renderer.domElement);
+				
+				controls = new OrbitControls(camera,renderer.domElement);
+				controls.addEventListener('change',beginRender);
+				
+				
+				var texture = new THREE.TextureLoader().load('../../img/nx.png');
+				var material = new THREE.MeshBasicMaterial({
+					map: texture,
+					side: THREE.DoubleSide
+				});
+				var planGeometry = new THREE.PlaneBufferGeometry(100,80);
+				var mesh = new THREE.Mesh(planGeometry,material);
+				
+				//scene.add(mesh);
+				
+				addArrow();
+			}
+			
+			
+			function addArrow(){
+				var arrowTexture = new THREE.TextureLoader().load('../../icons/arrow.png');
+				var material = new THREE.SpriteMaterial({map: arrowTexture});
+				var arrowSprite = new THREE.Sprite(material);
+				//arrowSprite.scale.set(10,100);
+				//动画混合器
+				var mixer  = new THREE.AnimationMixer(arrowSprite);
+				
+				//动画行为片段
+				const getClip = (pos = [0,0,0]) => {
+					const [x,y,z] = pos;
+					const times = [0,1];// 关键帧时间数组，离散的时间点序列
+					const values = [x,y,z,x,y+3,z];// 与时间点对应的值组成的数组
+					// 创建位置关键帧对象：0时刻对应位置0, 0, 0   1时刻对应位置150, 0, 0
+					const postTrack = new THREE.VectorKeyframeTrack('arrowSprite.position',times,values);
+					const duration = 1;
+					return new THREE.AnimationClip('arrowClip',duration,[postTrack]);
+				};
+				
+				//创建动画播放器，确定动画的表现
+				const action = mixer.clipAction(getClip([0,0,0]));
+				action.timeScale = 1;// 动画播放一个周期的时间
+				action.loop = THREE.LoopPingPong;// 动画循环类型
+				action.play();
+				
+				ainmate(mixer);
+				
+				
+				//scene.add(arrowSprite);
+				
+				//arrowAni = new TextureAnimator(arrowTexture, 1, 11, 11, 75);
+			}
+			
+			//在循环绘制中更新混合器，保证动画的执行：
+			function ainmate(mixer){
+				// 更新动画
+				const delta = this.clock.getDelta();
+				mixer.update(delta);
+				requestAnimationFrame(()=>{
+					ainmate(mixer);
+				});
+			}
+			
+			
+			
+			
+			
+			/**
+			 * @param {Object} texture
+			 * @param {Object} tilesHoriz  水平数量
+			 * @param {Object} tilesVert	垂直数量
+			 * @param {Object} numTiles		个数
+			 * @param {Object} tileDispDuration	每一帧停留时长
+			 */
+			function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, tileDispDuration) {
+			    // 纹理对象通过引用传入，之后可以直接使用update方法更新纹理位置
+			    this.tilesHorizontal = tilesHoriz;
+			    this.tilesVertical = tilesVert;
+			    // 序列图中的帧数
+			    this.numberOfTiles = numTiles;
+			    texture.wrapS = THREE.RepeatWrapping;
+			    texture.wrapT = THREE.RepeatWrapping;
+			    texture.repeat.set(1 / this.tilesHorizontal, 1 / this.tilesVertical);
+			
+			    // 每一帧停留时长
+			    this.tileDisplayDuration = tileDispDuration;
+			
+			    // 当前帧停留时长
+			    this.currentDisplayTime = 0;
+			
+			    // 当前帧
+			    this.currentTile = 0;
+			
+			    // 更新函数，通过这个函数对纹理位移进行更新
+			    this.update = (milliSec) => {
+			        this.currentDisplayTime += milliSec;
+			        while (this.currentDisplayTime > this.tileDisplayDuration) {
+			            this.currentDisplayTime -= this.tileDisplayDuration;
+			            this.currentTile++;
+			            if (this.currentTile === this.numberOfTiles) { this.currentTile = 0; }
+			            const currentColumn = this.currentTile % this.tilesHorizontal;
+			            texture.offset.x = currentColumn / this.tilesHorizontal;
+			            const currentRow = Math.floor(this.currentTile / this.tilesHorizontal);
+			            texture.offset.y = currentRow / this.tilesVertical;
+			        }
+			    };
+			}
+			
+			
+			
+			function beginRender(){
+				renderer.render(scene,camera);
+			}
+			
+			
+			
+		</script>
+
+	</body>
+</html>

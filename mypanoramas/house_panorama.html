@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		
+		<style type="text/css">
+			body{
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+		
+	</head>
+	<body>
+		<script type="module">
+			import * as THREE from '../js/three.module.js';
+			import { OrbitControls } from '../js/OrbitControls_new.js';
+			
+			var scene;
+			var camera,controls;
+			var renderer;
+			
+			var sphereMesh;
+			
+			
+			init();
+			beginRender();
+			
+			function init(){
+				scene = new THREE.Scene();
+				
+				camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+				//camera.position.z = 0.01;
+				//camera.target = new THREE.Vector3( 0, 0, 0 );
+				//camera.position.set(100,100,100);
+				camera.position.set(80,0,0);
+				//scene.add(camera)
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio(window.devicePixelRatio);
+				renderer.setSize(innerWidth,innerHeight);
+				
+				document.body.appendChild(renderer.domElement);
+				
+				
+				controls = new OrbitControls(camera,renderer.domElement);
+				controls.enableZoom = true;
+				controls.enablePan = false;
+				controls.enableDamping = true;
+				controls.rotateSpeed = -0.25;
+				//控制缩放大小，避免超出视野
+				controls.minDistance = 1;
+				controls.maxDistance = 2;
+				
+				//controls.addEventListener('change',beginRender);
+				
+				var sphereGeometry = new THREE.SphereBufferGeometry(500, 60, 40);
+				//var sphereGeometry = new THREE.BoxBufferGeometry( 100, 100, 100 );
+				sphereGeometry.scale(-1,1,1);
+				//var picTexture = new THREE.TextureLoader().load('../images/house.jpg');
+				var picTexture = new THREE.TextureLoader().load('../img/house.jpg');
+				var picMaterial = new THREE.MeshBasicMaterial({
+					map: picTexture
+				});
+				sphereMesh = new THREE.Mesh(sphereGeometry,picMaterial);
+				
+				scene.add(sphereMesh);
+				
+				console.log('picTexture',picTexture); 
+				console.log('sphereMesh',sphereMesh);
+			}
+			
+			function beginRender(){
+				sphereMesh.rotateY(0.001);
+				renderer.render(scene,camera);
+				requestAnimationFrame(beginRender);
+			}
+			
+			
+			
+		</script>
+		
+	</body>
+</html>

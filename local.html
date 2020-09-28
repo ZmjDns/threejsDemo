@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>three.js webgl - cloth simulation</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css">
+		<style>
+			body {
+				background-color: #cce0ff;
+				color: #000;
+				margin: 0 0;
+				padding: 0 0;
+			}
+			a {
+				color: #080;
+			}
+		</style>
+	</head>
+	
+	<body>
+		
+		
+		<script src="js/three.min.js"></script>
+		<script src="js/panolens.min.js"></script>
+		<script>
+			const panorama = new PANOLENS.ImagePanorama('./img/grasslight-big.jpg' );
+			//const panorama = new PANOLENS.ImagePanorama('./img/cloth.png');
+			const viewer = new PANOLENS.Viewer();
+			viewer.add( panorama );
+			
+		</script>
+	</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		
+		<style type="text/css">
+			body{
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+		
+	</head>
+	<body>
+		
+		<script src='./js/three.js'></script>
+		<script>
+			var camera,scene,point,renderer;
+			
+			var lat = 0,
+				lon = 90,
+				phi = 0,
+				theta = 0,
+				target = new THREE.Vector3();
+			
+			function init(){
+				scene = new THREE.Scene();
+				
+				//相机设置
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+				var k = width / height;	//窗口宽高比
+				var s = 200;	//3D场景显示范围控制系数
+				//相机对象
+				camera = new THREE.OrthographicCamera(-s*k,s*k,s,-s,1,1000);//
+				camera.position.set(200,300,200);//设置相机位置
+				camera.lookAt(scene.position);	//设置相机方向（指向场景对象）
+				
+				scene.add(camera);
+				point = new THREE.PointLight(0xffffff);
+				point.position.set(400,400,400);
+				scene.add(point);
+				var point2 = new THREE.PointLight(0xffffff);
+				point2.position.set(-400,-400,-400);//点光源位置
+				scene.add(point2);
+				//环境光
+				var ambient = new THREE.AmbientLight(0x444444);
+				scene.add(ambient);
+				
+				/* var materials = [];
+				loadTexture('images/px.jpg',function(material){	//right
+					materials.push(material);
+				});
+				loadTexture('images/nx.jpg',function(material){	//left
+					materials.push(material);
+				});
+				loadTexture('images/py.jpg',function(material){	//top
+					materials.push(material);
+				});
+				loadTexture('images/ny.jpg',function(material){	//bottom
+					materials.push(material);
+				});
+				loadTexture('images/pz.jpg',function(material){	//back
+					materials.push(material);
+				});
+				loadTexture('images/nz.jpg',function(material){	//front
+					materials.push(material);
+					console.log('finish loadImg' + materials.length);
+				}); 
+				
+				var mesh = new THREE.Mesh(
+					//new THREE.CubeGeometry(300, 300, 300, 7, 7, 7, materials),
+					new THREE.CylinderGeometry( 5, 5, 20, 32 ),
+					new THREE.MeshFaceMaterial({
+						color:0x0000ff
+					})
+				);
+				mesh.scale.x = -1;
+				scene.add(mesh); */
+				
+				var geometry = new THREE.BoxGeometry( 100, 100, 100 );
+				var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
+				var mesh = new THREE.Mesh(geometry,material);
+				scene.add(mesh);
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.setClearColor(0xb9d3ff,1);//设置背景色
+				
+				document.body.appendChild(renderer.domElement);
+				
+				renderer.render(scene, camera);
+			}
+			
+			init();
+			
+			function loadTexture(path,getMaterial){
+				console.log('beginLoad' + path);
+				var textureLoader = new THREE.TextureLoader();
+				textureLoader.load(path,function(texture){
+					var material = new THREE.MeshBasicMaterial({
+						map:texture
+					});
+					beginRender();
+					getMaterial(material);
+				});
+			}
+			
+			function beginRender(){
+				lat = Math.max(-85, Math.min(85, lat));
+				phi = (90 - lat) * Math.PI / 180;
+				theta = lon * Math.PI / 180;
+				
+				target.x = 500 * Math.sin(phi) * Math.cos(theta);
+				target.y = 500 * Math.cos(phi);
+				target.z = 500 * Math.sin(phi) * Math.sin(theta);
+				
+				camera.lookAt(target);
+				
+				renderer.render(scene, camera);
+				console.log('scene',scene);
+			}
+			
+		</script>
+		
+		
+	</body>
+</html>

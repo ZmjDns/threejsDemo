@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<style>
+			body{
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<script type="module">
+			import * as THREE from '../js/three.module.js';
+			import { OrbitControls } from '../js/OrbitControls_new.js'
+			
+			var scene,camera,renderer,controls;
+			
+			var textureLoader;
+			
+			init();
+			//beginRender();
+			
+			function init(){
+				//场景
+				scene = new THREE.Scene();
+				
+				//点光源
+				var pointLight = new THREE.PointLight(0xffffff);
+				pointLight.position.set(300, 300, 300);
+				scene.add(pointLight);
+				var pointLight1 = new THREE.PointLight(0xffffff);
+				pointLight1.position.set(-300, -300, -300);
+				scene.add(pointLight1);
+				//环境光
+				var ambient = new THREE.AmbientLight(0x444444);
+				scene.add(ambient);
+				//相机
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+				var k = width / height;
+				var s = 200;
+				//正交相机
+				//camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
+				camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 1, 1000);
+				//camera.position.set(500, 500, 500);
+				camera.position.set(292, 109, 268);
+				//camera.lookAt(scene.position);
+				
+				scene.add(camera);
+				//渲染对象
+				renderer = new THREE.WebGLRenderer({antialias:true});
+				renderer.setSize(width, height);
+				//renderer.setClearColor(0xb9d3ff, 1); //设置背景色
+				document.body.appendChild(renderer.domElement);
+				
+				//坐标系
+				var axesHelper = new THREE.AxesHelper(250);
+				scene.add(axesHelper);
+				
+				//监听事件
+				controls = new OrbitControls(camera, renderer.domElement);
+				
+				textureLoader = new THREE.TextureLoader();
+				
+				//添加一个精灵材质
+				//addSprit01();
+				
+				//MP2.5通过精灵展示
+				//showPM25();
+				
+				//树林
+				//spriteThtees();
+				
+				//精灵创建下雨效果
+				createRainBySprite();
+			}
+			
+			function beginRender(){
+				renderer.render(scene,camera);
+				requestAnimationFrame(beginRender);
+			}
+			//添加精灵
+			function addSprit01(){
+				var texture = textureLoader.load('../images/sprite.png')
+				//通过Sprite创建精灵模型不需要几何体，
+				//只需要给构造函数Sprite的参数设置为一个精灵材质SpriteMaterial即可。
+				var spriteMaterial = new THREE.SpriteMaterial({
+					color:0xff00ff,//设置精灵矩形区域颜色
+					rotation:Math.PI/4,//旋转精灵对象45度，弧度值
+					map:texture
+				});
+				//创建精灵模型对象，不需要几何体geometry参数
+				var sprite = new THREE.Sprite(spriteMaterial);
+				
+				scene.add(sprite);
+				// 控制精灵大小，比如可视化中精灵大小表征数据大小
+				sprite.scale.set(50,50,1);// 只需要设置x、y两个分量就可以
+			}
+			//MP2.5通过精灵展示
+			function showPM25(){
+				// 加载一个背景透明的圆形贴图，矩形精灵显示为圆形效果
+				var texture = textureLoader.load('../images/sprite.png');
+				// 创建组对象，包含所有精灵对象
+				var group = new THREE.Group();
+				// 文件加载对象
+				var fileLoader = new THREE.FileLoader().setResponseType('json');
+				// 加载PM2.5数据
+				fileLoader.load('../dataModel/dataPm25.json',function(data){
+					//遍历数据
+					data.forEach(elem => {
+						// 精灵材质
+						var spriteMaterial = new THREE.SpriteMaterial({
+							map: texture, //设置精灵纹理贴图
+							transparent: true,
+							opacity: 0.5,
+						});
+						// 创建精灵模型对象
+						var sprite = new THREE.Sprite(spriteMaterial);
+						group.add(sprite);
+						var scale = elem.value / 10;
+						sprite.scale.set(scale,scale,1);
+						//获得城市坐标设置精灵模型对象的位置
+						sprite.position.set(elem.coordinate[0],elem.coordinate[1],0)
+					});
+					// 中国城市坐标整体的几何中心不在坐标原点，需要适当的平移
+					group.position.set(-110,-30,0);
+					scene.add(group);
+				});
+			}
+			
+			//精灵模型Sprite模拟树林效果
+			function spriteThtees(){
+				var texture = textureLoader.load('../images/tree.png');
+				
+				for(let i = 0; i < 100; i++){
+					var spriteMaterial = new THREE.SpriteMaterial({
+						map:texture
+					});
+					var sprite = new THREE.Sprite(spriteMaterial);
+					
+					//矩形网格模型
+					/* var plane = new THREE.PlaneGeometry(1,1);
+					var mater = new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});
+					var sprite = new THREE.Mesh(plane,mater); */
+					
+					scene.add(sprite);
+					// 控制精灵大小,
+					sprite.scale.set(100,100,1);//// 只需要设置x、y两个分量就可以
+					var k1 = Math.random() - 0.5;
+					var k2 = Math.random() - 0.5;
+					// 设置精灵模型位置，在xoz平面上随机分布
+					sprite.position.set(1000 * k1,1000 * k2);
+				}
+				
+				createGrassLand();
+			}
+			function createGrassLand(){
+				var grassLandGeo = new THREE.PlaneGeometry(2000,2000);
+				var grassTexture = textureLoader.load('../img/grass.png');
+				
+				grassTexture.wrapS = THREE.RepeatWrapping;
+				grassTexture.wrapT = THREE.RepeatWrapping;
+				
+				// uv两个方向纹理重复数量
+				grassTexture.repeat.set(10,10);
+				var material = new THREE.MeshLambertMaterial({
+					map:grassTexture
+				});
+				var mesh = new THREE.Mesh(grassLandGeo,material);
+				mesh.translateZ(-60);
+				scene.add(mesh);
+			}
+			
+			//精灵创建下雨效果
+			var rainGroup;
+			function createRainBySprite(){
+				
+				rainGroup = new THREE.Group();
+				//添加地面
+				var ground = new THREE.PlaneGeometry(1000,1000);
+				var groundTexture = textureLoader.load('../img/grass.png')
+				groundTexture.wrapS = THREE.RepeatWrapping;
+				groundTexture.wrapT = THREE.RepeatWrapping;
+				groundTexture.repeat.set(20,20);
+				var groundMaterial = new THREE.MeshBasicMaterial({map:groundTexture,side:THREE.DoubleSide});
+				var groundMesh = new THREE.Mesh(ground,groundMaterial);
+				groundMesh.rotateX(Math.PI/2);
+				scene.add(groundMesh);
+				
+				
+				//加载雨滴精灵
+				var rainTexture = textureLoader.load('../images/rain.png');
+				
+				for(let i = 0; i < 400; i++){
+					var spriteMaterial = new THREE.SpriteMaterial({
+						map:rainTexture
+					});
+					
+					var rainSprite = new THREE.Sprite(spriteMaterial);
+					
+					rainGroup.add(rainSprite);
+					
+					rainSprite.scale.set(8,10,1);
+					
+					var k1 = Math.random() - 0.5;
+					var k2 = Math.random() - 0.5;
+					var k3 = Math.random() - 0.5;
+					
+					rainSprite.position.set(1000*k1,200*k2,1000*k3);
+				}
+				scene.add(rainGroup);
+				renderRain();
+			}
+			function renderRain(){
+				// 每次渲染遍历雨滴群组，刷新频率30~60FPS，两帧时间间隔16.67ms~33.33ms
+				// 每次渲染都会更新雨滴的位置，进而产生动画效果
+				rainGroup.children.forEach(sprit => {
+					// 雨滴的y坐标每次减1
+					sprit.position.y -= 1;
+					if(sprit.position.y < 0){
+						// 如果雨滴落到地面，重置y，从新下落
+						sprit.position.y = 300;
+					}
+				});
+				
+				renderer.render(scene,camera);
+				requestAnimationFrame(renderRain);
+			}
+			
+		</script>
+	</body>
+</html>

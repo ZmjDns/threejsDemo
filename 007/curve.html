@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+		<style>
+			body{
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- <script src="../js/three.js"></script>
+		<script src="./js/OrbitControls_new.js"></script> -->
+		<script type="module">
+
+			import * as THREE from '../js/three.module.js';
+			import { OrbitControls } from '../js/OrbitControls_new.js'
+			
+			//场景
+			var scene = new THREE.Scene();
+			
+			//点光源
+			var pointLight = new THREE.PointLight(0xffffff);
+			pointLight.position.set(300, 300, 300);
+			scene.add(pointLight);
+			var pointLight1 = new THREE.PointLight(0xffffff);
+			pointLight1.position.set(-300, -300, -300);
+			scene.add(pointLight1);
+			//环境光
+			var ambient = new THREE.AmbientLight(0x444444);
+			scene.add(ambient);
+			//相机
+			var width = window.innerWidth;
+			var height = window.innerHeight;
+			var k = width / height;
+			var s = 200;
+			var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
+			camera.position.set(200, 200, 200);
+			//camera.lookAt(scene.position);
+			//渲染对象
+			var renderer = new THREE.WebGLRenderer({antialias:true});
+			renderer.setSize(width, height);
+			renderer.setClearColor(0xb9d3ff, 1); //设置背景色
+			document.body.appendChild(renderer.domElement);
+			
+			//坐标系
+			var axesHelper = new THREE.AxesHelper(250);
+			scene.add(axesHelper);
+			
+			//监听事件
+			var controls = new OrbitControls(camera, renderer.domElement);
+			//controls.addEventListener('change', beginRender);
+			
+			
+			//通过API计算得到一个圆形线
+			var arc = new THREE.ArcCurve(0, 0, 10, 0, 2 * Math.PI);
+			//getPoints是基类Curve的方法，返回一个vector2对象作为元素组成的数组
+			var points = arc.getPoints(50);//分段数50，返回51个顶点
+			//console.log('points',points);
+			var geometry = new THREE.Geometry();
+			// setFromPoints方法从points中提取数据改变几何体的顶点属性vertices
+			geometry.setFromPoints(points);
+			//console.log('geometry.vertices',geometry.vertices);
+			
+			var material = new THREE.LineBasicMaterial({color:0x00ff00});
+			var mesh = new THREE.Line(geometry,material);
+			mesh.name = 'circle';
+			mesh.translateY(20);
+			scene.add(mesh);
+			
+			//添加通过三角函数构造的线
+			createArcCurveByCalcul();
+			//画线
+			drawLine();
+			draw3DLine();
+			
+			//三维曲线
+			curveLine();
+			//二次贝塞尔去曲线
+			bazierCurve();
+			
+			//添加文字
+			addText();
+			
+			scene.traverse(function(obj){
+				if(obj.name === 'circle'){
+					obj.material.color.set(0xff0000);
+					console.log('circle',obj);
+				}
+			});
+			
+			function getPositions(){
+				// .position属性获得本地坐标
+				console.log('本地坐标',mesh.position);
+				
+				// getWorldPosition()方法获得世界坐标
+				//该语句默认在threejs渲染的过程中执行,
+				//如果渲染之前想获得世界矩阵属性、世界位置属性等属性，需要通过代码更新
+				scene.updateMatrixWorld(true);
+				var worldPosition = new THREE.Vector3();
+				mesh.getWorldPosition(worldPosition);
+				console.log('世界坐标',worldPosition);
+			}
+			
+			beginRender();
+			function beginRender() {
+				renderer.render(scene, camera);
+				//getPositions();
+				requestAnimationFrame(beginRender);
+			}
+			
+			
+			function addText(){
+				var loader = new THREE.FontLoader();
+				loader.load('../fonts/helvetiker_regular.typeface.json',function(font){
+					var geometry = new THREE.TextGeometry( 'Hello three.js!', {
+							font: font,
+							size: 20,
+							height: 20,
+							curveSegments: 0,
+							bevelEnabled: false,
+							bevelThickness: 10,
+							bevelSize: 8,
+							bevelSegments: 5
+						} );
+					var materal = new THREE.MeshBasicMaterial({color:0x0000ff});
+					var mesh = new THREE.Mesh(geometry,materal);
+					mesh.translateX(-50);
+					scene.add(mesh);
+				});
+			}
+			
+			/**
+			 * 通过三角函数计算生成圆弧线顶点
+			 */
+			function createArcCurveByCalcul(){
+				var geometry = new THREE.Geometry();
+				var R = 100;//半径
+				var N = 50;//分段数量
+				// 批量生成圆弧上的顶点数据
+				for(var i = 0; i < N; i++){
+					var angle = 2*Math.PI/N * i;
+					var x = R * Math.sin(angle);
+					var y = R * Math.cos(angle);
+					geometry.vertices.push(new THREE.Vector3(x,y,0));
+				}
+				// 插入最后一个点，line渲染模式下，产生闭合效果
+				//geometry.vertices.push(geometry.vertices[0]);
+				
+				var material = new THREE.LineBasicMaterial({color: 0x000000});
+				var mesh = new THREE.Line(geometry,material);
+				scene.add(mesh);
+			}
+			
+			/**
+			 * 绘制直线效果
+			 */
+			function drawLine(){
+				var geometry = new THREE.Geometry();
+				var p1 = new THREE.Vector3(50,0,0);
+				var p2 = new THREE.Vector3(0,70,0);
+				//顶点坐标添加到geometry对象
+				geometry.vertices.push(p1,p2);
+				var material = new THREE.LineBasicMaterial({color:0x004500});
+				var line = new THREE.Line(geometry,material);
+				
+				scene.add(line);
+			}
+			
+			/**
+			 * 通过LineCurve3绘制一条三维直线。
+			 */
+			function draw3DLine(){
+				var geometry = new THREE.Geometry();
+				var p1 = new THREE.Vector3(70,0,0);
+				var p2 = new THREE.Vector3(0,90,0);
+				// 三维直线LineCurve3
+				var lineCurve3 = new THREE.LineCurve3(p1,p2);
+				// 二维直线LineCurve
+				var lineCurve2 = new THREE.LineCurve(new THREE.Vector2(70,0),new THREE.Vector2(0,90));
+				var pointArr = lineCurve3.getPoints(10);
+				geometry.setFromPoints(pointArr);
+				
+				var material = new THREE.LineBasicMaterial({color:0x004500});
+				var line = new THREE.Line(geometry,material);
+				scene.add(line);
+			}
+			
+			//////////////////////////////////曲线//////////////////////////////////////////
+			//三维曲线
+			function curveLine(){
+				var geometry = new THREE.Geometry(); //声明一个几何体对象Geometry
+				// 三维样条曲线  Catmull-Rom算法
+				var curve = new THREE.CatmullRomCurve3([
+					new THREE.Vector3(-50, 20, 90),
+					new THREE.Vector3(-10, 40, 40),
+					new THREE.Vector3(0, 0, 0),
+					new THREE.Vector3(60, -60, 0),
+					new THREE.Vector3(70, 0, 80)
+				]);
+				//getPoints是基类Curve的方法，返回一个vector3对象作为元素组成的数组
+				var points = curve.getPoints(100);//分段数100，返回101个顶点
+				// setFromPoints方法从points中提取数据改变几何体的顶点属性vertices
+				geometry.setFromPoints(points);
+				//材质对象
+				var material = new THREE.LineBasicMaterial({color:0x009800})
+				var line = new THREE.Line(geometry,material);
+				scene.add(line);
+			}
+			/**
+			 * 三维二次贝赛尔曲线
+			 */
+			function bazierCurve(){
+				var geometry = new THREE.Geometry();
+				var p1 = new THREE.Vector3(-80,60,-50);		//起点
+				var p2 = new THREE.Vector3(80, 120, 0);		//控制点（曲线之外）次贝塞尔曲线
+				var p3 = new THREE.Vector3(40, 100, 0);		//控制点（曲线之外）三次贝塞尔曲线
+				var p4 = new THREE.Vector3(80, 0, 50);		//终点
+				var tTimesCurve = new THREE.QuadraticBezierCurve3(p1, p2, p3,p4);
+				var points = tTimesCurve.getPoints(100);
+				geometry.setFromPoints(points);
+				
+				var material = new THREE.LineBasicMaterial({color:0x003652});
+				
+				var line = new THREE.Line(geometry,material);
+				line.translateZ(100);
+				scene.add(line);
+			}
+			
+			
+		</script>
+	</body>
+</html>

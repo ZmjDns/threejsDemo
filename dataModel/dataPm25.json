@@ -1,0 +1,19 @@
+[{
+  "name": "海门",
+  "value": 19,
+  "coordinate": [121.15, 31.89]
+},
+{
+  "name": "青岛",
+  "value": 18,
+  "coordinate": [120.33, 36.07]
+},
+{
+  "name": "青岛",
+  "value": 18,
+  "coordinate": [119.33, 36.07]
+},{
+  "name": "武汉",
+  "value": 27,
+  "coordinate": [114.31, 30.52]
+}]
